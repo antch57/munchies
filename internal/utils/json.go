@@ -2,9 +2,9 @@ package utils
 
 import (
 	"encoding/json"
-	"errors"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/antch57/munchies/models"
 )
@@ -35,17 +35,24 @@ func WriteData(snacks []models.Snack) error {
 		return marshal_err
 	}
 
-	// Create the data directory if it doesn't exist
-	if _, err := os.Stat("data"); errors.Is(err, os.ErrNotExist) {
-		err := os.Mkdir("data", 0755)
-		if err != nil {
-			log.Fatal("error creating data directory:", err)
+	// Get the path to the data file
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+	dataFilePath := filepath.Join(homeDir, ".munchies", "data", "snack.json")
+
+	// Ensure the directory exists
+	dataDir := filepath.Dir(dataFilePath)
+	if _, err := os.Stat(dataDir); os.IsNotExist(err) {
+		if mkdirErr := os.MkdirAll(dataDir, 0755); mkdirErr != nil {
+			return mkdirErr
 		}
 		log.Println("data directory created")
 	}
 
 	// Write the JSON data to the file
-	write_err := os.WriteFile("data/snack.json", b, 0644)
+	write_err := os.WriteFile(dataFilePath, b, 0644)
 	if write_err != nil {
 		return write_err
 	}
@@ -57,7 +64,14 @@ func WriteData(snacks []models.Snack) error {
 
 // read_data reads the data from the JSON file
 func ReadData() ([]models.Snack, error) {
-	data, err := os.ReadFile("data/snack.json")
+	// Get the path to the data file
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return nil, err
+	}
+	dataFilePath := filepath.Join(homeDir, ".munchies", "data", "snack.json")
+
+	data, err := os.ReadFile(dataFilePath)
 	if err != nil {
 		return nil, err
 	}

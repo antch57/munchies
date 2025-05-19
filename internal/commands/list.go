@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/antch57/munchies/internal/utils"
 	"github.com/antch57/munchies/models"
@@ -12,7 +13,13 @@ import (
 
 func listSnack(snack *string) error {
 	// Check if the file exists
-	if _, err := os.Stat("data/snack.json"); err != nil {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+	dataFilePath := filepath.Join(homeDir, ".munchies", "data", "snack.json")
+
+	if _, err := os.Stat(dataFilePath); err != nil {
 		return errors.New("snack file does not exist")
 	}
 
