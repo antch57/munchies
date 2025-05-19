@@ -32,3 +32,6 @@ Thumbs.db
 
 # data dir
 /data/
+
+# bin dir
+/bin/
