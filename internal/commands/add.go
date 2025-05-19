@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/antch57/munchies/internal/utils"
 	"github.com/antch57/munchies/models"
@@ -17,9 +18,23 @@ func addSnack(snack *string, count *int) error {
 		return errors.New("gotta eat a snack to save a snack")
 	}
 
-	// Check if the file exists
+	// Get the path to the data file
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+	dataFilePath := filepath.Join(homeDir, ".munchies", "data", "snack.json")
+
+	// Ensure the directory exists
+	dataDir := filepath.Dir(dataFilePath)
+	if _, err := os.Stat(dataDir); os.IsNotExist(err) {
+		if mkdirErr := os.MkdirAll(dataDir, 0755); mkdirErr != nil {
+			return mkdirErr
+		}
+	}
+
 	// If it doesn't exist, create it
-	if _, err := os.Stat("data/snack.json"); err == nil {
+	if _, err := os.Stat(dataFilePath); err == nil {
 		snacks := []models.Snack{
 			{Snack: *snack, Count: *count},
 		}
