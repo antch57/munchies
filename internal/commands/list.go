@@ -48,18 +48,16 @@ func listSnack(snack *string, date *string) error {
 		}
 	} else if *date != "" {
 		// If a date is specified, filter the list
-		if *date != "" {
-			for _, s := range saved_snacks {
-				// Parse the time from the snack struct
-				parsedTime, err := time.Parse(time.RFC3339, s.Time)
-				if err != nil {
-					return fmt.Errorf("error parsing time for snack %s: %v", s.Snack, err)
-				}
-				// Format the date to YYYY-MM-DD
-				formattedDate := parsedTime.Format("01/02/06")
-				if formattedDate == *date {
-					filtered_snacks = append(filtered_snacks, s)
-				}
+		for _, s := range saved_snacks {
+			// Parse the time from the snack struct
+			parsedTime, err := time.Parse(time.RFC3339, s.Time)
+			if err != nil {
+				return fmt.Errorf("error parsing time for snack %s: %v", s.Snack, err)
+			}
+			// Format the date to YYYY-MM-DD
+			formattedDate := parsedTime.Format("01/02/06")
+			if formattedDate == *date {
+				filtered_snacks = append(filtered_snacks, s)
 			}
 		}
 	} else if *snack != "" {
@@ -69,14 +67,31 @@ func listSnack(snack *string, date *string) error {
 				filtered_snacks = append(filtered_snacks, s)
 			}
 		}
+	} else {
+		// If a date is specified, filter the list
+		for _, s := range saved_snacks {
+			// Parse the time from the snack struct
+			parsedTime, err := time.Parse(time.RFC3339, s.Time)
+			if err != nil {
+				return fmt.Errorf("error parsing time for snack %s: %v", s.Snack, err)
+			}
+
+			// Format the date to YYYY-MM-DD
+			formattedDate := parsedTime.Format("01/02/06")
+			today := time.Now().Format("01/02/06")
+			if formattedDate == today {
+				filtered_snacks = append(filtered_snacks, s)
+			}
+		}
 	}
 
 	// If no snacks match the criteria return.
 	if len(filtered_snacks) == 0 {
-		fmt.Println(*snack, "not found.")
+		fmt.Println("No snacks found matching the criteria.")
 		return nil
 	}
 
+	fmt.Println("Snacks Found:")
 	// Print to the console
 	for _, snack := range filtered_snacks {
 		// Parse the time from the snack struct
@@ -88,7 +103,7 @@ func listSnack(snack *string, date *string) error {
 		// Format the time into MM/DD/YY - HH:MM
 		formattedTime := parsedTime.Format("01/02/06 - 15:04")
 
-		fmt.Printf("Snack: %s, Count: %d, Date: %s\n", snack.Snack, snack.Count, formattedTime)
+		fmt.Printf("	Snack: %s, Count: %d, Date: %s\n", snack.Snack, snack.Count, formattedTime)
 	}
 
 	return nil
