@@ -27,6 +27,10 @@ clean: ## Clean up build artifacts
 	@echo "Cleaning up..."
 	@rm -rf $(BUILD_DIR)
 
+deep-clean: ## clean .munchies directory and saved data.
+	@echo "Deep cleaning..."
+	@rm -rf ${HOME}/.munchies
+
 install: build ## Install the binary to /usr/local/bin
 	@echo "Installing the binary..."
 	@mv $(BUILD_DIR)/$(BINARY_NAME) /usr/local/bin/
