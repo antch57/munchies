@@ -11,10 +11,7 @@ import (
 )
 
 func main() {
-	var showDebugLog bool
-	flag.BoolVar(&showDebugLog, "debug", false, "print debug messages")
-
-	flag.Usage = commands.Usage // see below
+	flag.Usage = commands.Usage
 	flag.Parse()
 
 	// user needs to provide a subcommand

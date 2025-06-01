@@ -6,18 +6,32 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/antch57/munchies/internal/utils"
 	"github.com/antch57/munchies/models"
 )
 
 // Command logic
-func addSnack(snack *string, count *int) error {
+func addSnack(snack *string, count *int, timeInput *string) error {
 	// Check if the snack and count are valid
 	if *snack == "" || *count == 0 {
 		return errors.New("gotta eat a snack to save a snack")
 	}
 
+	// If time is provided, validate the provided time format
+	if *timeInput != "" {
+		parsedTime, err := time.Parse("15:04", *timeInput)
+		if err != nil {
+			return fmt.Errorf("invalid time format: %v. Please use HH:MM format (e.g., 14:30)", err)
+		}
+		today := time.Now().Format("2006-01-02")
+		*timeInput = fmt.Sprintf("%sT%s:00Z", today, parsedTime.Format("15:04"))
+
+	} else {
+		// If no time is provided, use the current time
+		*timeInput = time.Now().Format(time.RFC3339)
+	}
 	// Get the path to the data file
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -36,7 +50,11 @@ func addSnack(snack *string, count *int) error {
 	// If it doesn't exist, create it
 	if _, err := os.Stat(dataFilePath); err == nil {
 		snacks := []models.Snack{
-			{Snack: *snack, Count: *count},
+			{
+				Snack: *snack,
+				Count: *count,
+				Time:  *timeInput,
+			},
 		}
 
 		// read the existing JSON file
@@ -56,7 +74,11 @@ func addSnack(snack *string, count *int) error {
 
 	} else {
 		snacks := []models.Snack{
-			{Snack: *snack, Count: *count},
+			{
+				Snack: *snack,
+				Count: *count,
+				Time:  *timeInput,
+			},
 		}
 
 		// Write new file.
@@ -73,19 +95,15 @@ func AddSnackCmd(args []string) error {
 	flagSet := flag.NewFlagSet("add", flag.ExitOnError)
 	snack := flagSet.String("snack", "", "name to snack")
 	count := flagSet.Int("count", 0, "number of snacks eaten")
-
-	flagSet.Usage = func() {
-		fmt.Fprintln(os.Stderr, "Add a munchie.")
-		fmt.Fprintln(os.Stderr, "\nUsage: munchies add [flags]")
-		fmt.Fprintln(os.Stderr, "\nFlags:")
-		flag.PrintDefaults()
-
-		fmt.Fprintln(os.Stderr)
-	}
+	timeInput := flagSet.String("time", "", "time of snack (optional, defaults to current time)")
 
 	flagSet.Parse(args)
 
-	err := addSnack(snack, count)
+	flagSet.Usage = func() {
+		flag.PrintDefaults()
+	}
+
+	err := addSnack(snack, count, timeInput)
 	if err != nil {
 		return err
 	}

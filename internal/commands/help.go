@@ -16,9 +16,6 @@ func Usage() {
 		fmt.Fprintf(os.Stderr, "  %-8s %s\n", cmd.Name, cmd.Help)
 	}
 
-	fmt.Fprintln(os.Stderr, "\nFlags:")
-	flag.PrintDefaults()
-
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintf(os.Stderr, "Run `munchies <command> -h` to get help for a specific command\n\n")
 }
