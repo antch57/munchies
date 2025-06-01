@@ -3,6 +3,7 @@ package models
 type Snack struct {
 	Snack string
 	Count int
+	Time  string
 }
 
 type Command struct {

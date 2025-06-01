@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/antch57/munchies/internal/utils"
 	"github.com/antch57/munchies/models"
 )
 
-func listSnack(snack *string) error {
+func listSnack(snack *string, date *string) error {
 	// Check if the file exists
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -29,24 +30,80 @@ func listSnack(snack *string) error {
 		return err
 	}
 
-	// If a snack is specified, filter the list
-	if *snack != "" {
-		var filtered_snacks []models.Snack
+	// If a date or snack is specified, filter the list
+	var filtered_snacks []models.Snack
+
+	if *date != "" && *snack != "" {
+		for _, s := range saved_snacks {
+			// Parse the time from the snack struct
+			parsedTime, err := time.Parse(time.RFC3339, s.Time)
+			if err != nil {
+				return fmt.Errorf("error parsing time for snack %s: %v", s.Snack, err)
+			}
+			// Format the date to YYYY-MM-DD
+			formattedDate := parsedTime.Format("01/02/06")
+			if formattedDate == *date && s.Snack == *snack {
+				filtered_snacks = append(filtered_snacks, s)
+			}
+		}
+	} else if *date != "" {
+		// If a date is specified, filter the list
+		for _, s := range saved_snacks {
+			// Parse the time from the snack struct
+			parsedTime, err := time.Parse(time.RFC3339, s.Time)
+			if err != nil {
+				return fmt.Errorf("error parsing time for snack %s: %v", s.Snack, err)
+			}
+			// Format the date to YYYY-MM-DD
+			formattedDate := parsedTime.Format("01/02/06")
+			if formattedDate == *date {
+				filtered_snacks = append(filtered_snacks, s)
+			}
+		}
+	} else if *snack != "" {
+		// If a snack is specified, filter the list
 		for _, s := range saved_snacks {
 			if s.Snack == *snack {
 				filtered_snacks = append(filtered_snacks, s)
 			}
 		}
-		saved_snacks = filtered_snacks
+	} else {
+		// If a date is specified, filter the list
+		for _, s := range saved_snacks {
+			// Parse the time from the snack struct
+			parsedTime, err := time.Parse(time.RFC3339, s.Time)
+			if err != nil {
+				return fmt.Errorf("error parsing time for snack %s: %v", s.Snack, err)
+			}
+
+			// Format the date to YYYY-MM-DD
+			formattedDate := parsedTime.Format("01/02/06")
+			today := time.Now().Format("01/02/06")
+			if formattedDate == today {
+				filtered_snacks = append(filtered_snacks, s)
+			}
+		}
 	}
 
-	if len(saved_snacks) == 0 {
-		fmt.Println("No snacks found.")
+	// If no snacks match the criteria return.
+	if len(filtered_snacks) == 0 {
+		fmt.Println("No snacks found matching the criteria.")
 		return nil
 	}
 
-	for _, snack := range saved_snacks {
-		fmt.Printf("Snack: %s, Count: %d\n", snack.Snack, snack.Count)
+	fmt.Println("Snacks Found:")
+	// Print to the console
+	for _, snack := range filtered_snacks {
+		// Parse the time from the snack struct
+		parsedTime, err := time.Parse(time.RFC3339, snack.Time)
+		if err != nil {
+			return fmt.Errorf("error parsing time for snack %s: %v", snack.Snack, err)
+		}
+
+		// Format the time into MM/DD/YY - HH:MM
+		formattedTime := parsedTime.Format("01/02/06 - 15:04")
+
+		fmt.Printf("	Snack: %s, Count: %d, Date: %s\n", snack.Snack, snack.Count, formattedTime)
 	}
 
 	return nil
@@ -56,18 +113,15 @@ func ListSnackCmd(args []string) error {
 	// Define the command-line arg
 	flagSet := flag.NewFlagSet("list", flag.ExitOnError)
 	snack := flagSet.String("snack", "", "name of snack to list")
-	flagSet.Usage = func() {
-		fmt.Fprintln(os.Stderr, "List munchies eaten.")
-		fmt.Fprintln(os.Stderr, "\nUsage: munchies read [flags]")
-		fmt.Fprintln(os.Stderr, "\nFlags:")
-		flag.PrintDefaults()
-
-		fmt.Fprintln(os.Stderr)
-	}
+	date := flagSet.String("date", "", "date to filter snacks (MM/DD/YY format)")
 
 	flagSet.Parse(args)
 
-	err := listSnack(snack)
+	flagSet.Usage = func() {
+		flag.PrintDefaults()
+	}
+
+	err := listSnack(snack, date)
 	if err != nil {
 		return err
 	}
