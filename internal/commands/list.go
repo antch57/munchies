@@ -54,9 +54,11 @@ func listSnack(snack *string, start *string, end *string) error {
 	for _, s := range saved_snacks {
 		parsedTime, err := time.Parse(time.RFC3339, s.Time)
 		if err != nil {
-			continue
+			return err
 		}
+
 		dateOnly := parsedTime.Format(layout)
+		fmt.Println("Date only: ", dateOnly)
 		dt, _ := time.Parse(layout, dateOnly)
 		if (dt.Equal(startDate) || dt.After(startDate)) && (dt.Equal(endDate) || dt.Before(endDate)) {
 			if *snack == "" || s.Snack == *snack {
