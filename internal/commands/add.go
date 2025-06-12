@@ -21,17 +21,17 @@ func addSnack(snack *string, count *int, timeInput *string) error {
 
 	// If time is provided, validate the provided time format
 	if *timeInput != "" {
-		parsedTime, err := time.Parse("15:04", *timeInput)
+		parsedTime, err := time.Parse(time.RFC3339, *timeInput)
 		if err != nil {
 			return fmt.Errorf("invalid time format: %v. Please use HH:MM format (e.g., 14:30)", err)
 		}
 		today := time.Now().Format("2006-01-02")
-		*timeInput = fmt.Sprintf("%sT%s:00Z", today, parsedTime.Format("15:04"))
+		*timeInput = fmt.Sprintf("%sT%s:00Z", today, parsedTime.Format(time.RFC3339))
 
 	} else {
 		// If no time is provided, use the current time
 		today := time.Now().Format("2006-01-02")
-		*timeInput = fmt.Sprintf("%sT%s:00Z", today, time.Now().Format("15:04"))
+		*timeInput = fmt.Sprintf("%sT%s:00Z", today, time.Now().Format(time.RFC3339))
 	}
 
 	snacks := []models.Snack{

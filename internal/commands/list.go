@@ -17,6 +17,7 @@ func listSnack(snack *string, start *string, end *string) error {
 	if err != nil {
 		return err
 	}
+
 	dataFilePath := filepath.Join(homeDir, ".munchies", "data", "snack.json")
 	if _, err := os.Stat(dataFilePath); err != nil {
 		return errors.New("snack file does not exist")
@@ -71,19 +72,20 @@ func listSnack(snack *string, start *string, end *string) error {
 	}
 
 	// Print detailed section
-	fmt.Printf("Snacks for %s", startDate.Format(layout))
 	if !startDate.Equal(endDate) {
-		fmt.Printf(" to %s", endDate.Format(layout))
-	}
-	fmt.Println("\n\nDetailed Log:")
-	fmt.Println("────────────────────────────────────────────")
-	fmt.Printf("  %-8s | %-10s | %-5s\n", "Time", "Snack", "Count")
-	fmt.Println("───────────┼────────────┼───────")
-	for _, snack := range filtered_snacks {
-		parsedTime, _ := time.Parse(time.RFC3339, snack.Time)
-		fmt.Printf("  %-8s | %-10s | %-5d\n", parsedTime.Format("15:04"), snack.Snack, snack.Count)
+		fmt.Printf("\nmunchies list from %s to %s", startDate.Format(layout), endDate.Format(layout))
+	} else {
+		fmt.Printf("\nmunchies list for %s", startDate.Format(layout))
 	}
 
+	fmt.Println("\n─────────────────────────────────────────────────")
+	fmt.Printf("  %-10s | %-8s | %-12s | %-5s\n", "Date", "Time", "Snack", "Count")
+	fmt.Println("─────────────────────────────────────────────────")
+
+	for _, snack := range filtered_snacks {
+		parsedTime, _ := time.Parse(time.RFC3339, snack.Time)
+		fmt.Printf("  %-10s | %-8s | %-12s | %-5d\n", parsedTime.Format(layout), parsedTime.Format("15:04"), snack.Snack, snack.Count)
+	}
 	// Print summary
 	fmt.Println("\nSummary:")
 	fmt.Println("─────────────────────────────")
