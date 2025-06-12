@@ -36,7 +36,7 @@ func listSnack(snack *string, start *string, end *string) error {
 		*start = now.Format(layout)
 	}
 	if *end == "" {
-		*end = *start
+		*end = now.Format(layout)
 	}
 	startDate, err = time.Parse(layout, *start)
 	if err != nil {
