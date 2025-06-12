@@ -3,6 +3,10 @@ BINARY_NAME = munchies
 CMD_DIR = ./cmd/munchies
 BUILD_DIR = ./bin
 
+MUNCHIES_COMMAND ?= help
+MUNCHIES_INSTALL_DIR ?= /usr/local/bin
+MUNCHIES_UNINSTALL_DIR ?= /usr/local/bin
+
 .PHONY: all
 all: help ## Default target
 
@@ -13,9 +17,9 @@ build: ## Build the binary
 	go build -o $(BUILD_DIR)/$(BINARY_NAME) $(CMD_DIR)
 
 .PHONY: run
-run: build ## Run the application
+run: build ## Run the application use MUNCHIES_COMMAND to specify the command to run
 	@echo "Running the application..."
-	$(BUILD_DIR)/$(BINARY_NAME)
+	$(BUILD_DIR)/$(BINARY_NAME) $(MUNCHIES_COMMAND)
 
 .PHONY: test
 test: ## Run tests
@@ -27,23 +31,30 @@ clean: ## Clean up build artifacts
 	@echo "Cleaning up..."
 	@rm -rf $(BUILD_DIR)
 
-deep-clean: ## clean .munchies directory and saved data.
-	@echo "Deep cleaning..."
-	@rm -rf ${HOME}/.munchies
+.PHONY: deep-clean
+deep-clean: ## clean .munchies directory and saved data
+	@read -p "Are you sure you want to delete all munchies data? [y/N] " ans; \
+	if [ "$$ans" = "y" ] || [ "$$ans" = "Y" ]; then \
+		echo "Deleting .munchies directory and saved data..."; \
+		rm -rf $(HOME)/.munchies; \
+	else \
+		echo "Aborted."; \
+	fi
 
-install: build ## Install the binary to /usr/local/bin
-	@echo "Installing the binary..."
-	@mv $(BUILD_DIR)/$(BINARY_NAME) /usr/local/bin/
+.PHONY: install
+install: build ## Install the binary to MUNCHIES_INSTALL_DIR. Defaults to /usr/local/bin.
+	@echo "Installing the binary to $(MUNCHIES_INSTALL_DIR)..."
+	@mv $(BUILD_DIR)/$(BINARY_NAME) $(MUNCHIES_INSTALL_DIR)
+
+.PHONY: uninstall
+uninstall: ## unstall the binary from specified directory. Defaults to /usr/local/bin
+	@echo "Uninstalling the binary from $(MUNCHIES_UNINSTALL_DIR)..."
+	@rm $(MUNCHIES_UNINSTALL_DIR)/$(BINARY_NAME) || true
 
 .PHONY: fmt
 fmt: ## Format the code
 	@echo "Formatting code..."
 	go fmt ./...
-
-.PHONY: cmd
-cmd: build ## Run the application with a specific command (e.g., make cmd ARGS="help")
-	@echo "Running with arguments: $(ARGS)"
-	$(BUILD_DIR)/$(BINARY_NAME) $(ARGS)
 
 .PHONY: help
 help: ## Show this help.
