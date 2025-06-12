@@ -30,8 +30,18 @@ func addSnack(snack *string, count *int, timeInput *string) error {
 
 	} else {
 		// If no time is provided, use the current time
-		*timeInput = time.Now().Format(time.RFC3339)
+		today := time.Now().Format("2006-01-02")
+		*timeInput = fmt.Sprintf("%sT%s:00Z", today, time.Now().Format("15:04"))
 	}
+
+	snacks := []models.Snack{
+		{
+			Snack: *snack,
+			Count: *count,
+			Time:  *timeInput,
+		},
+	}
+
 	// Get the path to the data file
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -47,16 +57,8 @@ func addSnack(snack *string, count *int, timeInput *string) error {
 		}
 	}
 
-	// If it doesn't exist, create it
+	// If snacks file exists, read it and append the new snack
 	if _, err := os.Stat(dataFilePath); err == nil {
-		snacks := []models.Snack{
-			{
-				Snack: *snack,
-				Count: *count,
-				Time:  *timeInput,
-			},
-		}
-
 		// read the existing JSON file
 		saved_snacks, err := utils.ReadData()
 		if err != nil {
@@ -73,15 +75,7 @@ func addSnack(snack *string, count *int, timeInput *string) error {
 		}
 
 	} else {
-		snacks := []models.Snack{
-			{
-				Snack: *snack,
-				Count: *count,
-				Time:  *timeInput,
-			},
-		}
-
-		// Write new file.
+		// If the file does not exist, create a new slice with the snack
 		err := utils.WriteData(snacks)
 		if err != nil {
 			return err
