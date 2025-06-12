@@ -24,7 +24,7 @@ run: build ## Run the application use MUNCHIES_COMMAND to specify the command to
 .PHONY: test
 test: ## Run tests
 	@echo "Running tests..."
-	go test ./... -v
+	go test ./... -v -cover
 
 .PHONY: clean
 clean: ## Clean up build artifacts
